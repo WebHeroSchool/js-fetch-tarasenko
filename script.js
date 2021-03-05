@@ -3,25 +3,44 @@ const params = new URLSearchParams(window.location.search);
 const username = params.get('username');
 
 function insertPic(pic) {
+	const main = document.querySelector('main');
 	let img = new Image();
 	img.src = pic;
-	document.body.append(img);
+	main.append(img);
 }
 
-function insertBio(bio) {
+function insertData(data) {
+	const main = document.querySelector('main');
 	let span = document.createElement('span');
-	span.innerHTML = bio;
-	document.body.append(span);
+	span.innerHTML = data;
+	main.append(span);
 }
 
 function insertName(name, link) {
+	const main = document.querySelector('main');
 	let a = document.createElement('a');
 	a.innerHTML = name;
 	a.href = link;
-	document.body.append(a);
+	main.append(a);
 }
 
-fetch(`https://api.github.com/users/${username}`)
+const getDate = new Promise((resolve, reject) => {
+	setTimeout(() => {
+		let date = new Date();
+		date = date.toDateString();
+		resolve(date);
+	}, 3000);
+});
+
+const getName = new Promise((resolve, reject) =>  {
+	setTimeout(() => username ? resolve(username) : reject(new Error("Пользователь не найден")), 5000)
+})
+
+Promise.all([getDate, getName])
+	.then(([date, username]) => {
+		insertData(date);
+		return fetch(`https://api.github.com/users/${username}`);
+	})
 	.then(response => {
 		if (response.ok) return response.json()
 		else alert("Информация о пользователе не доступна")
@@ -32,6 +51,14 @@ fetch(`https://api.github.com/users/${username}`)
 		let userBio = json.bio;
 		let userUrl = json.html_url;
 		insertName(userName, userUrl);
-		insertBio(userBio);
+		insertData(userBio);
 		insertPic(userAvatar);
-		})
+	})
+	.then(() => {
+		const section = document.querySelector('section');
+		const main = document.querySelector('main');
+		section.classList.add('hidden');
+		main.classList.remove('hidden');
+	})
+	.catch(alert);
+
