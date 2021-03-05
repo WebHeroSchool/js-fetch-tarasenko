@@ -1,6 +1,6 @@
 
 const params = new URLSearchParams(window.location.search);
-const username = params.get('username');
+const username = params.get('username') || 'tarasenkov-web';
 
 function insertPic(pic) {
 	const main = document.querySelector('main');
